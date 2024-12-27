@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:expense_tracker_app/welcome_screen.dart'; // Replace with the actual path to your Welcome screen
+import 'package:expense_tracker_app/screens/welcome_screen.dart'; // Replace with the actual path to your Welcome screen
 import 'package:shared_preferences/shared_preferences.dart';
+import 'currency_converter_screen.dart'; // Import the CurrencyConverterScreen
 
 class SettingsScreen extends StatefulWidget {
   @override
@@ -18,7 +19,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadCurrency(); // Load the saved currency on initialization
   }
 
-  // Load the saved currency from SharedPreferences
   Future<void> _loadCurrency() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -26,7 +26,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  // Save the selected currency to SharedPreferences
   Future<void> _saveCurrency(String currency) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('currency', currency);
@@ -34,7 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the AppBar text color based on the theme
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final appBarTextColor = isDarkMode ? Colors.white : Colors.black;
 
@@ -44,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           'Settings',
           style: TextStyle(
             fontSize: 22.0,
-            color: appBarTextColor, // Dynamically set text color
+            color: appBarTextColor,
           ),
         ),
         backgroundColor: Colors.purple,
@@ -69,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() {
                       _selectedCurrency = newCurrency;
                     });
-                    _saveCurrency(newCurrency); // Save the new currency
+                    _saveCurrency(newCurrency);
                   }
                 },
               ),
@@ -79,21 +77,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               trailing: Icon(Icons.cloud_upload),
             ),
             ElevatedButton(
-              onPressed: () {
-                // Handle settings actions
-              },
+              onPressed: () {},
               child: Text('Save Settings'),
             ),
             SizedBox(height: 20),
             ElevatedButton(
+              onPressed: () {
+                // Navigate to CurrencyConverterScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CurrencyConverterScreen()),
+                );
+              },
+              child: Text('Currency Converter'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
               onPressed: () async {
-                // Logout functionality
                 try {
                   await FirebaseAuth.instance.signOut(); // Log out the user
-                  // After logout, redirect to the Welcome page
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => WelcomeScreen()), // Replace with your Welcome page
+                    MaterialPageRoute(builder: (context) => WelcomeScreen()),
                   );
                 } catch (e) {
                   print("Error logging out: $e");
@@ -101,7 +106,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
               child: Text('Logout'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, // Red color for the logout button
+                backgroundColor: Colors.red,
               ),
             ),
           ],

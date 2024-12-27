@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'splash_screen.dart';
-import 'welcome_screen.dart';
-import 'signup_screen.dart';
-import 'login_screen.dart';
-import 'home_screen.dart';
-import 'add_expense_screen.dart';
-import 'transaction_history_screen.dart';
-import 'categories_screen.dart';
-import 'budgeting_screen.dart';
-import 'reports_screen.dart';
-import 'settings_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/welcome_screen.dart';
+import 'screens/signup_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/add_expense_screen.dart';
+import 'screens/transaction_history_screen.dart';
+import 'screens/categories_screen.dart';
+import 'screens/budgeting_screen.dart';
+import 'screens/reports_screen.dart';
+import 'screens/settings_screen.dart';
 import 'model/expense_model.dart';
 import 'theme_provider.dart';
 
@@ -22,7 +22,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()), // Theme Management
-        ChangeNotifierProvider(create: (context) => ExpenseModel()),  // Expense Tracking Model
+        ChangeNotifierProvider(create: (context) => ExpenseIncomeModel()),  // Expense Tracking Model
       ],
       child: MyApp(),
     ),

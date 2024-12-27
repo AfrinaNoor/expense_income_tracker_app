@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SavingsScreen extends StatelessWidget {
   final List<Map<String, dynamic>> savingsCategories = [
@@ -29,11 +30,12 @@ class SavingsScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: SingleChildScrollView( // Wrap the body with SingleChildScrollView
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: GridView.builder(
-            shrinkWrap: true,  // Ensures the grid doesn't take more space than necessary
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 16,
@@ -50,7 +52,6 @@ class SavingsScreen extends StatelessWidget {
                 color: category['color'].withOpacity(0.2),
                 child: InkWell(
                   onTap: () {
-                    // Navigate to detailed savings screen for this category
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -92,7 +93,7 @@ class SavingsScreen extends StatelessWidget {
   }
 }
 
-class SavingsDetailScreen extends StatelessWidget {
+class SavingsDetailScreen extends StatefulWidget {
   final String categoryName;
   final IconData icon;
   final Color color;
@@ -104,41 +105,73 @@ class SavingsDetailScreen extends StatelessWidget {
   });
 
   @override
+  _SavingsDetailScreenState createState() => _SavingsDetailScreenState();
+}
+
+class _SavingsDetailScreenState extends State<SavingsDetailScreen> {
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController noteController = TextEditingController();
+
+  void saveToFirestore() async {
+    try {
+      final collectionRef = FirebaseFirestore.instance.collection('savings');
+      await collectionRef.add({
+        'category': widget.categoryName,
+        'amount': double.parse(amountController.text),
+        'note': noteController.text,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Update budgeting screen logic here if needed
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Savings added successfully!')),
+      );
+
+      Navigator.pop(context);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $error')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(categoryName),
-        backgroundColor: color,
+        title: Text(widget.categoryName),
+        backgroundColor: widget.color,
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Icon(icon, size: 80, color: color),
+            Icon(widget.icon, size: 80, color: widget.color),
             SizedBox(height: 16),
-            Text(
-              categoryName,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Enter Amount',
+                border: OutlineInputBorder(),
               ),
             ),
             SizedBox(height: 16),
-            Text(
-              'This is your detailed page for $categoryName savings.',
-              style: TextStyle(fontSize: 18),
-              textAlign: TextAlign.center,
+            TextField(
+              controller: noteController,
+              decoration: InputDecoration(
+                labelText: 'Enter Note',
+                border: OutlineInputBorder(),
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: saveToFirestore,
               style: ElevatedButton.styleFrom(
-                backgroundColor: color,
+                backgroundColor: widget.color,
               ),
-              child: Text('Back to Savings Categories'),
+              child: Text('Save'),
             ),
           ],
         ),

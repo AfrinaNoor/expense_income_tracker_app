@@ -49,15 +49,18 @@ class ExpenseIncomeModel extends ChangeNotifier {
   double _totalExpenses = 0.0;
   double _totalIncome = 0.0;
   double _remainingBalance = 0.0;
-  double _budget = 1000.0; // Default budget
-  String _selectedCurrency = '\$'; // Default currency
+  double _budget = 0.0; // Default budget
+  String _selectedCurrency = '\BDT'; // Default currency
+  double _incomeBudget = 0.0;
+  double _expenseBudget = 0.0;
+  double _savingBudget = 0.0;
 
   final Map<String, double> _categoryBudgets = {};
   List<TransactionModel> _transactions = [];
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Getters
+  // Getters for totals
   double get totalExpenses => _totalExpenses;
   double get totalIncome => _totalIncome;
   double get remainingBalance => _remainingBalance;
@@ -65,6 +68,14 @@ class ExpenseIncomeModel extends ChangeNotifier {
   String get selectedCurrency => _selectedCurrency;
   Map<String, double> get categoryBudgets => _categoryBudgets;
   List<TransactionModel> get transactions => _transactions;
+
+  // Getters for budgets
+  double get incomeBudget => _incomeBudget;
+  double get expenseBudget => _expenseBudget;
+  double get savingBudget => _savingBudget;
+
+  // New method for calculating total savings
+  double get totalSavings => _remainingBalance;
 
   // Set or update the total budget
   void setBudget(double newBudget) {
@@ -81,9 +92,38 @@ class ExpenseIncomeModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Set budget for a specific category
-  void setCategoryBudget(String category, double budget) {
-    _categoryBudgets[category] = budget;
+  // Set income, expense, and saving budgets
+  void setBudgets(double incomeBudget, double expenseBudget, double savingBudget) {
+    _incomeBudget = incomeBudget;
+    _expenseBudget = expenseBudget;
+    _savingBudget = savingBudget;
+
+    notifyListeners();
+  }
+
+  // Save budgets to Firestore
+  Future<void> saveBudgetsToDatabase() async {
+    final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'incomeBudget': _incomeBudget,
+        'expenseBudget': _expenseBudget,
+        'savingBudget': _savingBudget,
+      });
+
+      notifyListeners();
+    } catch (e) {
+      print("Error saving budgets to Firestore: $e");
+    }
+  }
+
+  // Reset all budgets to default values
+  void resetBudgets() {
+    _incomeBudget = 0.0;
+    _expenseBudget = 0.0;
+    _savingBudget = 0.0;
+
     notifyListeners();
   }
 

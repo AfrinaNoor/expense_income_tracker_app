@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expense_tracker_app/services/firebase_service.dart'; // Import your Firebase service
+import 'package:intl/intl.dart'; // For date formatting
 
 class AddExpenseScreen extends StatefulWidget {
   @override
@@ -10,8 +11,24 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   String _selectedCategory = 'Food';
+  DateTime _selectedDate = DateTime.now();
   final FirebaseService _firebaseService = FirebaseService();
-  bool _isLoading = false; // Add loading state
+  bool _isLoading = false; // Loading state
+
+  // Function to pick a date
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
 
   // Function to save the expense
   Future<void> _saveExpense(BuildContext context) async {
@@ -48,9 +65,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       // Save the expense to Firestore
       await _firebaseService.saveTransaction(
         double.parse(amountText),  // Amount
-        DateTime.now(),             // Date
-        _selectedCategory,         // Category
-        noteText.isNotEmpty ? noteText : 'No Note',// Note
+        _selectedDate,              // Date
+        _selectedCategory,          // Category
+        noteText.isNotEmpty ? noteText : 'No Note',
+        'expense',                  // Type
       );
 
       // Show success message and return to the previous screen
@@ -99,6 +117,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.purple),
                   ),
+                  prefixIcon: Icon(Icons.attach_money, color: Colors.purple),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -114,6 +133,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.purple),
                   ),
+                  prefixIcon: Icon(Icons.notes, color: Colors.purple),
                 ),
               ),
               SizedBox(height: 20),
@@ -158,6 +178,21 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               ),
               SizedBox(height: 20),
 
+              // Date Picker
+              Row(
+                children: [
+                  Text(
+                    'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
+                    style: TextStyle(color: Colors.purple),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.calendar_today, color: Colors.purple),
+                    onPressed: () => _selectDate(context),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+
               // Save Expense Button
               Center(
                 child: Container(
@@ -180,7 +215,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),

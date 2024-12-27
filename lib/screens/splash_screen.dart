@@ -32,7 +32,7 @@ class SplashScreen extends StatelessWidget {
 
             // App Name
             Text(
-              'FinTrack Pro',
+              'FinTrack',
               style: TextStyle(
                 fontSize: 32,
                 color: Colors.purpleAccent,
